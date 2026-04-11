@@ -1,0 +1,24 @@
+name: ARIA CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install CPU-only dependencies
+      run: |
+        pip install torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+        pip install numpy scipy matplotlib gymnasium stable-baselines3 \
+                    filterpy loguru rich pydantic pytest pytest-cov
+    - name: Run tests
+      run: pytest tests/ -v --tb=short --ignore=tests/test_gpu.py
