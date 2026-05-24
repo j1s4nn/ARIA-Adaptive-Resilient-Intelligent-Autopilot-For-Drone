@@ -4,7 +4,7 @@
 
 ---
 
-## 🚁 Overview
+##  Overview
 
 ARIA integrates **four AI agents** into a unified drone autopilot stack:
 
@@ -17,17 +17,17 @@ ARIA integrates **four AI agents** into a unified drone autopilot stack:
 
 ---
 
-## 🖥️ Hardware Compatibility
+##  Hardware Compatibility
 
 | Component | Requirement | Your Setup (RTX 3060) |
 |-----------|------------|----------------------|
-| GPU | CUDA-capable | ✅ RTX 3060 12GB |
-| VRAM | ≥6GB for RL training | ✅ 12GB |
-| VRAM | ~4GB for Q4 LLM (7B) | ✅ Fits in 12GB |
-| RAM | ≥12GB | ✅ 16GB |
+| GPU | CUDA-capable |  RTX 3060 12GB |
+| VRAM | ≥6GB for RL training |  12GB |
+| VRAM | ~4GB for Q4 LLM (7B) |  Fits in 12GB |
+| RAM | ≥12GB |  16GB |
 | CUDA | 11.8+ | Use cu118 wheels |
 
-**Does the code work on RTX 3060 + 16GB RAM?** ✅ Yes, with these caveats:
+**Does the code work on RTX 3060 + 16GB RAM?**  Yes, with these caveats:
 - RL training (Agent A): ~30–60 min for 2M steps on RTX 3060
 - LLM inference (Agent B): Mistral 7B Q4_K_M uses ~4GB VRAM, leaving 8GB for RL
 - CLIP (Agent C): ViT-B/32 uses ~1GB VRAM, very fast
@@ -58,7 +58,7 @@ pip install PyFlyt
 
 ---
 
-## ⚙️ Installation
+##  Installation
 
 ```bash
 # 1. Clone repo
@@ -91,7 +91,7 @@ pip install -e .
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ```bash
 # Run integrated simulation (no GPU required for demo)
@@ -106,7 +106,7 @@ pytest tests/ -v
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 ARIA/
@@ -130,7 +130,7 @@ ARIA/
 
 ---
 
-## 📊 Results Visualization
+##  Results Visualization
 
 After running `run_simulation.py`, figures are saved to `assets/`:
 
@@ -143,7 +143,7 @@ Use these directly in the LaTeX paper.
 
 ---
 
-## 🤖 LLM Model Setup (Agent B)
+##  LLM Model Setup (Agent B)
 
 Agent B requires a local GGUF model. Without it, a rule-based fallback is used automatically.
 
@@ -161,7 +161,7 @@ plan = pilot.parse_command("Find the blue truck and follow it unnoticed")
 
 ---
 
-## 📄 Citation
+##  Citation
 
 If you use ARIA in your research:
 
