@@ -10,7 +10,7 @@
 
 ---
 
-## ✨ Overview
+## Overview
 
 ARIA integrates **four cooperating AI agents** around a shared 6-DOF quadrotor model. Each agent solves one hard problem that, together, makes the drone genuinely autonomous and responsible:
 
@@ -29,7 +29,7 @@ python simulation/run_simulation.py
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ![System architecture](output/figures/00_system_architecture.png)
 
@@ -37,7 +37,7 @@ The operator speaks a natural-language mission. **Agent B** parses it into a way
 
 ---
 
-## 🔧 Installation
+## Installation
 
 ARIA's core needs only a lightweight scientific stack. The heavy ML/LLM/vision libraries are **optional** and isolated, so the demo and tests run anywhere.
 
@@ -73,7 +73,7 @@ pip install -e ".[ml,cv,dev]"
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Run the integrated 4-agent simulation (auto-saves every output)
@@ -98,11 +98,11 @@ output/
 
 ---
 
-# 🧠 The Four Core Motives
+# The Four Core Motives
 
 Each section below shows the figures ARIA produces for that agent. Every image is regenerated on each run.
 
-## 🅰️ Agent A — Self-Healing Control
+## Agent A — Self-Healing Control
 
 **Motive:** survive a motor failure. At `t = 45 s` the front-right motor is destroyed. The controller detects the loss, rebuilds its control-allocation mixer using only the three healthy motors, and trades away yaw authority (the one thing a quad cannot recover) to keep roll, pitch, and altitude stable.
 
@@ -122,7 +122,7 @@ Each section below shows the figures ARIA produces for that agent. Every image i
 
 ---
 
-## 🅱️ Agent B — LLM Pilot
+## Agent B — LLM Pilot
 
 **Motive:** fly with plain English. The operator says *"Search the north field for a blue truck and follow it, but stay unnoticed."* Agent B parses intent, stealth constraints, and target into a structured mission.
 
@@ -142,7 +142,7 @@ Each section below shows the figures ARIA produces for that agent. Every image i
 
 ---
 
-## 🅲 Agent C — Ethical Guardrails
+## Agent C — Ethical Guardrails
 
 **Motive:** not every geometrically valid path is socially acceptable. Agent C registers sensitive geo-zones (a funeral, a school) and refuses to fly through them — both when planning and while airborne.
 
@@ -158,7 +158,7 @@ Each section below shows the figures ARIA produces for that agent. Every image i
 
 ---
 
-## 🅳 Agent D — Digital Twin
+## Agent D — Digital Twin
 
 **Motive:** never run out of battery mid-mission. Agent D maintains a live twin of the drone, forecasting energy 60 s ahead, estimating wind with a Kalman filter, and recommending speed/altitude changes.
 
@@ -176,7 +176,7 @@ Each section below shows the figures ARIA produces for that agent. Every image i
 
 ---
 
-## 🗺️ Combined View
+## Combined View
 
 The full dashboard, generated at the end of every run:
 
@@ -188,7 +188,7 @@ And the 3-D flight path (colour = time):
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ARIA/
@@ -216,7 +216,7 @@ ARIA/
 └── .github/                      # CI workflow + issue/PR templates
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 pytest tests/ -v
@@ -224,7 +224,7 @@ pytest tests/ -v
 
 19 unit tests cover physics hover stability, motor-failure injection, NL parsing rules, guardrail blocking/rerouting, path sanitization, energy forecasting, wind estimation, and the battery model. CI runs them on Python 3.10–3.12 plus a headless simulation smoke test.
 
-## 🐞 Troubleshooting
+## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -234,14 +234,14 @@ pytest tests/ -v
 | LLM parsing falls back to rules | Expected without a GGUF model; pass `LLMPilot(model_path=...)` to enable real LLM parsing |
 | Matplotlib window pops up | Rendering is forced headless (`Agg`); figures always go to `output/figures/` |
 
-## 🗓️ Roadmap
+## Roadmap
 
 - [ ] Replace the demo fault-tolerant mixer with the trained PPO policy checkpoint
 - [ ] Hardware-in-the-loop with PX4 SITL / PyFlyt physics
 - [ ] Real camera feed into Agent C (CLIP) for live scene classification
 - [ ] Multi-drone coordination and conflict deconfliction
 
-## 📄 Citation
+## Citation
 
 ```bibtex
 @software{aria2026,
@@ -253,11 +253,11 @@ pytest tests/ -v
 }
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
