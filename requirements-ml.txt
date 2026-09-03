@@ -1,0 +1,29 @@
+# ARIA - optional ML / LLM / vision stack
+# Install AFTER requirements.txt:
+#     pip install -r requirements.txt
+#     pip install -r requirements-ml.txt
+#
+# Enables:
+#   - Agent A PPO training (torch + stable-baselines3 + gymnasium)
+#   - Agent B real LLM parsing (llama-cpp-python + a GGUF model)
+#   - Agent C CLIP scene classification (clip + opencv)
+#
+# GPU users (RTX 3060): install the matching CUDA torch wheel first, e.g.
+#     pip install torch --index-url https://download.pytorch.org/whl/cu118
+# CPU-only machines can just run:  pip install torch
+
+torch>=2.1.0
+gymnasium>=0.29.0
+stable-baselines3>=2.1.0
+tensorboard>=2.14.0
+tqdm>=4.66.0
+
+# Local LLM inference for Agent B (download a GGUF model separately, e.g.
+# https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF)
+llama-cpp-python>=0.2.20
+
+# Vision for Agent C
+opencv-python>=4.8.0
+Pillow>=10.0.0
+# OpenAI CLIP is not on PyPI; install from source:
+#     pip install git+https://github.com/openai/CLIP.git

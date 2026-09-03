@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aria-drone"
+version = "1.1.0"
+description = "ARIA: Adaptive Resilient Intelligent Autopilot - a four-agent autonomous drone stack (self-healing RL, LLM command parsing, ethical guardrails, energy digital twin)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Md Jisan Hossen" }]
+keywords = ["drone", "autopilot", "reinforcement-learning", "llm", "digital-twin", "robotics", "uav"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "filterpy>=1.4.5",
+    "loguru>=0.7.2",
+    "rich>=13.6.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    "torch>=2.1.0",
+    "gymnasium>=0.29.0",
+    "stable-baselines3>=2.1.0",
+    "tensorboard>=2.14.0",
+    "tqdm>=4.66.0",
+    "llama-cpp-python>=0.2.20",
+]
+cv = [
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone"
+Issues = "https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone/issues"
+Changelog = "https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone/blob/main/CHANGELOG.md"
+
+[project.scripts]
+aria-sim = "simulation.run_simulation:main"
+aria-train = "agents.self_healing_agent:main"
+
+[tool.setuptools.packages.find]
+include = ["core*", "agents*", "simulation*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

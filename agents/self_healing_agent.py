@@ -136,8 +136,15 @@ class SelfHealingEnv(gym.Env):
         return float(total)
 
 
-def build_ppo_agent(env_id, device="cuda"):
+def _auto_device() -> str:
+    """Use the GPU when CUDA is available, otherwise fall back to CPU."""
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def build_ppo_agent(env_id: str = "SelfHealingEnv", device: str = "auto"):
     """Build PPO with network size appropriate for RTX 3060."""
+    if device == "auto":
+        device = _auto_device()
     env = DummyVecEnv([lambda: SelfHealingEnv()])
     env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.0)
 
@@ -172,7 +179,7 @@ def train(total_timesteps: int = 2_000_000, save_path: str = "models/self_healin
     Train the self-healing agent.
     ~2M steps takes ~30–60 min on RTX 3060.
     """
-    Path("models").mkdir(exist_ok=True)
+    Path(save_path).mkdir(parents=True, exist_ok=True)
     model, env = build_ppo_agent("SelfHealingEnv")
 
     eval_env = DummyVecEnv([lambda: SelfHealingEnv()])
@@ -196,13 +203,17 @@ def load_agent(model_path: str, vec_norm_path: str):
     env = VecNormalize.load(vec_norm_path, env)
     env.training = False
     env.norm_reward = False
-    model = PPO.load(model_path, env=env, device="cuda")
+    model = PPO.load(model_path, env=env, device=_auto_device())
     return model, env
 
 
-if __name__ == "__main__":
-    # Quick environment sanity check
+def main() -> None:
+    """Console entry point: sanity-check the env, then train."""
     env = SelfHealingEnv()
     check_env(env, warn=True)
     logger.info("Environment check passed. Starting training...")
     train(total_timesteps=2_000_000)
+
+
+if __name__ == "__main__":
+    main()

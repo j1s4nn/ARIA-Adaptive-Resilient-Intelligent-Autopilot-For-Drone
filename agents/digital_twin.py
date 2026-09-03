@@ -10,10 +10,9 @@ polynomial battery model calibrated to LiPo discharge curves.
 """
 
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 from loguru import logger
-from scipy.optimize import minimize_scalar
 from filterpy.kalman import KalmanFilter
 
 
@@ -29,7 +28,7 @@ class LiPoModel:
     """
 
     # OCV curve coefficients (4S 4Ah pack, fitted to Turnigy data)
-    _OCV_COEFFS = np.array([−1.031, 3.685, −1.468, 0.3201, −0.1589, 4.061])
+    _OCV_COEFFS = np.array([-1.031, 3.685, -1.468, 0.3201, -0.1589, 4.061])
 
     def __init__(self, capacity_ah: float = 4.0, cells: int = 4, r_int: float = 0.05):
         self.capacity_ah = capacity_ah
@@ -159,34 +158,44 @@ class DigitalTwin:
     def forecast(self, segments: list[MissionSegment], current_soc: float,
                  lookahead_seconds: float = 60.0) -> EnergyForecast:
         """
-        Simulate segments up to lookahead_seconds and report energy budget.
+        Simulate the mission and report the energy budget.
+
+        Two quantities are computed:
+          * ``total_energy_wh`` - energy needed within ``lookahead_seconds``
+            (the rolling short-horizon forecast used for in-flight control).
+          * ``can_complete``    - feasibility of the **entire** remaining
+            mission, so a long mission on a nearly empty pack is correctly
+            reported as infeasible even though the next 60 s are affordable.
         """
         wind = self.wind.wind_vector
         battery_wh = current_soc * self.battery.capacity_ah * self.battery.ocv(current_soc)
         energies = []
         time_acc = 0.0
+        full_mission_e = 0.0
 
         for seg in segments:
-            if time_acc >= lookahead_seconds:
-                break
             thrust = self.segment_thrust(seg, wind)
+            full_mission_e += self.battery.energy_for_segment(thrust, seg.duration)
+            if time_acc >= lookahead_seconds:
+                continue
             dt = min(seg.duration, lookahead_seconds - time_acc)
-            e = self.battery.energy_for_segment(thrust, dt)
-            energies.append(e)
+            energies.append(self.battery.energy_for_segment(thrust, dt))
             time_acc += seg.duration
 
         total_e = sum(energies)
-        can_complete = total_e < (battery_wh * 0.80)  # Keep 20% reserve
+        usable_wh = battery_wh * 0.80                 # keep a 20% reserve
+        can_complete = bool(full_mission_e < usable_wh)
 
         # Recommend altitude where tailwind is likely (simple heuristic)
         rec_alt = self._recommend_altitude(wind)
-        rec_speed = self._recommend_speed(battery_wh, total_e, segments)
+        rec_speed = self._recommend_speed(battery_wh, full_mission_e, segments)
 
         warning = ""
         if not can_complete:
-            pct = total_e / battery_wh * 100
-            warning = (f"⚠ Mission needs {pct:.0f}% battery, only {current_soc*100:.0f}% available. "
-                       f"Reduce speed or drop altitude to catch tailwind.")
+            pct = full_mission_e / max(battery_wh, 1e-6) * 100
+            warning = (f"Mission needs {pct:.0f}% of the remaining pack, only "
+                       f"{current_soc*100:.0f}% SoC available. Reduce speed or "
+                       f"drop altitude to catch a tailwind.")
 
         return EnergyForecast(
             segment_energies_wh=energies,

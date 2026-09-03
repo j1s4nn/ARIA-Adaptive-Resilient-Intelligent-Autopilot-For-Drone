@@ -3,14 +3,15 @@
 % LaTeX Paper — Compile with: pdflatex aria_paper.tex
 % Upload to Overleaf: https://www.overleaf.com
 %
-% IMAGE ATTACHMENT GUIDE (search for %%IMAGE in this file):
-%   fig_self_healing_altitude.png  — Agent A: altitude recovery after motor failure
-%   fig_ethical_guardrails.png     — Agent C: flight path around ethical zones
-%   fig_energy_forecast.png        — Agent D: battery SoC over time
-%   fig_architecture.png           — System architecture block diagram (CREATE MANUALLY)
-%   fig_rl_reward_curve.png        — RL training reward curve (from TensorBoard screenshot)
-%   fig_llm_pipeline.png           — NL → MissionPlan pipeline diagram (CREATE MANUALLY)
-%   fig_simulation_screenshot.png  — Screenshot from PyFlyt/AirSim simulation
+% IMAGE ATTACHMENT GUIDE - ALL figures are generated automatically by
+%     python simulation/run_simulation.py
+% and saved into ../output/figures/ (see \graphicspath below):
+%   fig_architecture.png           - System architecture diagram
+%   fig_self_healing_altitude.png  - Agent A: altitude recovery after motor failure
+%   fig_ethical_guardrails.png     - Agent C: flight path around ethical zones
+%   fig_energy_forecast.png        - Agent D: battery SoC over time
+%   fig_llm_pipeline.png           - Agent B: NL -> MissionPlan pipeline diagram
+%   fig_rl_reward_curve.png        - RL training reward curve (after training)
 % =====================================================================
 
 \documentclass[10pt,twocolumn]{article}
@@ -18,6 +19,7 @@
 % ── Packages ──────────────────────────────────────────────────────────
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
+\graphicspath{{../output/figures/}}
 \usepackage{amsmath, amssymb}
 \usepackage{booktabs}
 \usepackage{hyperref}

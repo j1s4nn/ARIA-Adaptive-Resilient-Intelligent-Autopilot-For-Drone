@@ -186,7 +186,20 @@ class LLMPilot:
         cmd = command.lower()
         waypoints = []
 
-        if any(k in cmd for k in ["follow", "track", "tail"]):
+        if any(k in cmd for k in ["search", "find", "look for"]):
+            # Checked before "follow": "search X and follow it" commands
+            # should first fly the search pattern.
+            waypoints = self._generate_search_grid(grid_size=80, step=20, altitude=15)
+            stealth = any(k in cmd for k in ["unnoticed", "hidden", "stealthy"])
+            return MissionPlan(
+                mode=FlightMode.SEARCH,
+                waypoints=waypoints,
+                target_description=self._extract_target(cmd),
+                follow_distance=30.0 if stealth else 15.0,
+                reasoning="Search grid generated"
+                          + (" (stealth constraints applied)" if stealth else ""),
+            )
+        elif any(k in cmd for k in ["follow", "track", "tail"]):
             stealth = any(k in cmd for k in ["unnoticed", "hidden", "stealthy", "far"])
             dist = 30.0 if stealth else 15.0
             return MissionPlan(
@@ -207,15 +220,6 @@ class LLMPilot:
             return MissionPlan(mode=FlightMode.RETURN_HOME, waypoints=[Waypoint(0, 0, 20)])
         elif any(k in cmd for k in ["land", "descend"]):
             return MissionPlan(mode=FlightMode.LAND, waypoints=[Waypoint(0, 0, 0)])
-        elif any(k in cmd for k in ["search", "find", "look for"]):
-            # Generate search grid
-            waypoints = self._generate_search_grid(grid_size=50, step=15, altitude=20)
-            return MissionPlan(
-                mode=FlightMode.SEARCH,
-                waypoints=waypoints,
-                target_description=self._extract_target(cmd),
-                reasoning="Search grid generated.",
-            )
         elif any(k in cmd for k in ["go to", "fly to", "move to"]):
             # Try to extract coordinates
             nums = re.findall(r'[-\d.]+', cmd)

@@ -9,16 +9,47 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    - name: Install CPU-only dependencies
-      run: |
-        pip install torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
-        pip install numpy scipy matplotlib gymnasium stable-baselines3 \
-                    filterpy loguru rich pydantic pytest pytest-cov
-    - name: Run tests
-      run: pytest tests/ -v --tb=short --ignore=tests/test_gpu.py
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install core dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --tb=short --cov=core --cov=agents --cov-report=term-missing
+
+      - name: Smoke-test the simulation (short run)
+        run: |
+          python simulation/run_simulation.py --duration 30 --failure-time 15
+
+      - name: Upload generated figures
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: aria-figures
+          path: output/figures/*.png
+          retention-days: 14
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Byte-compile all sources
+        run: python -m compileall core agents simulation tests

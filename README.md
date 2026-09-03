@@ -1,175 +1,268 @@
-# ARIA – Adaptive Resilient Intelligent Autopilot
+# ARIA — Adaptive Resilient Intelligent Autopilot
 
-> *An advanced autonomous drone system with self-healing, natural language control, ethical awareness, and energy-intelligent mission planning.*
+> An advanced autonomous drone system combining **self-healing control**, **natural-language commanding**, **ethical guardrails**, and **energy-aware digital-twin planning** into a single, fully integrated autopilot stack.
 
----
+[![ARIA CI](https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone/actions/workflows/ci.yml/badge.svg)](https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+%20-blue.svg)](https://www.python.org/downloads/)
 
-##  Overview
-
-ARIA integrates **four AI agents** into a unified drone autopilot stack:
-
-| Agent | Innovation |
-|-------|-----------|
-| **A – Self-Healing** | RL agent re-calculates flight physics for a crippled drone in real-time |
-| **B – LLM-Pilot** | Local LLM translates natural language commands to flight maneuvers |
-| **C – Ethical Guardrails** | CLIP-based scene classifier prevents socially unacceptable overflights |
-| **D – Digital Twin** | Simulates energy 60 seconds ahead, adjusts altitude to catch tailwinds |
+![ARIA simulation dashboard](output/figures/12_aria_dashboard.png)
 
 ---
 
-##  Hardware Compatibility
+## ✨ Overview
 
-| Component | Requirement | Your Setup (RTX 3060) |
-|-----------|------------|----------------------|
-| GPU | CUDA-capable |  RTX 3060 12GB |
-| VRAM | ≥6GB for RL training |  12GB |
-| VRAM | ~4GB for Q4 LLM (7B) |  Fits in 12GB |
-| RAM | ≥12GB |  16GB |
-| CUDA | 11.8+ | Use cu118 wheels |
+ARIA integrates **four cooperating AI agents** around a shared 6-DOF quadrotor model. Each agent solves one hard problem that, together, makes the drone genuinely autonomous and responsible:
 
-**Does the code work on RTX 3060 + 16GB RAM?**  Yes, with these caveats:
-- RL training (Agent A): ~30–60 min for 2M steps on RTX 3060
-- LLM inference (Agent B): Mistral 7B Q4_K_M uses ~4GB VRAM, leaving 8GB for RL
-- CLIP (Agent C): ViT-B/32 uses ~1GB VRAM, very fast
-- Digital Twin (Agent D): CPU-only, no GPU needed
+| Agent | Core motive | What it does |
+|-------|-------------|--------------|
+| **A** — Self-Healing | Fault tolerance | Re-allocates thrust in real time after a motor fails so the drone keeps flying |
+| **B** — LLM Pilot | Natural-language control | Turns a plain-English command into a structured waypoint mission |
+| **C** — Ethical Guardrails | Social awareness | Blocks and re-routes paths that cross funerals, schools, and other sensitive zones |
+| **D** — Digital Twin | Energy intelligence | Forecasts energy 60 s ahead, estimates wind, and adapts speed/altitude |
 
----
+> **Everything you see below is generated automatically.** Running a single command produces all figures, the telemetry CSV, the log, and a markdown report in `output/` — no manual screenshots required.
 
-## 🛰️ Simulation Software
-
-### Primary (Recommended): PyFlyt
 ```bash
-pip install PyFlyt
+python simulation/run_simulation.py
 ```
-- Built on PyBullet physics
-- Native multirotor support
-- Works on all platforms
-- Docs: https://jjshoots.github.io/PyFlyt/
-
-### Alternative: Microsoft AirSim
-- Download: https://github.com/microsoft/AirSim/releases
-- Unreal Engine-based, photorealistic
-- API: https://microsoft.github.io/AirSim/
-- Python: `pip install airsim`
-
-### Alternative: Gazebo + PX4 SITL
-- Best for real-hardware transfer
-- Guide: https://docs.px4.io/main/en/simulation/gazebo_classic.html
 
 ---
 
-##  Installation
+## 🏗️ System Architecture
+
+![System architecture](output/figures/00_system_architecture.png)
+
+The operator speaks a natural-language mission. **Agent B** parses it into a waypoint plan, **Agent C** sanitizes that plan around ethical exclusion zones, the flight controller executes it, and **Agent D** continuously forecasts energy and wind to keep the mission feasible. When a motor fails mid-flight, **Agent A** rebuilds the control allocation using only the healthy motors.
+
+---
+
+## 🔧 Installation
+
+ARIA's core needs only a lightweight scientific stack. The heavy ML/LLM/vision libraries are **optional** and isolated, so the demo and tests run anywhere.
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/YOUR_USERNAME/ARIA-drone.git
-cd ARIA-drone
+# 1. Clone
+git clone https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone.git
+cd ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone
 
-# 2. Create virtual environment
+# 2. Create a virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Windows:  venv\Scripts\activate
+# macOS/Linux:  source venv/bin/activate
 
-# 3. Install PyTorch with CUDA 11.8 (RTX 3060)
-pip install torch==2.1.0+cu118 torchvision==0.16.0+cu118 \
-    --index-url https://download.pytorch.org/whl/cu118
-
-# 4. Install remaining dependencies
+# 3. Install core dependencies
 pip install -r requirements.txt
-
-# 5. (Optional) Install LLM for Agent B
-#    Download: https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF
-#    Get: Mistral-7B-Instruct-v0.2.Q4_K_M.gguf (~4.1 GB)
-pip install llama-cpp-python --extra-index-url \
-    https://abetlen.github.io/llama-cpp-python/whl/cu118
-
-# 6. Install CLIP
-pip install git+https://github.com/openai/CLIP.git
-
-# 7. Install ARIA
-pip install -e .
 ```
+
+### Optional extras
+
+```bash
+# Reinforcement learning (Agent A training), local LLM (Agent B), CLIP vision (Agent C)
+pip install -r requirements-ml.txt
+
+# Or install the package in editable mode with extras
+pip install -e ".[ml,cv,dev]"
+```
+
+| Extra | Enables | Notes |
+|-------|---------|-------|
+| *(core)* | Full simulation, all figures, tests | `numpy scipy matplotlib filterpy loguru rich` |
+| `ml` | PPO training, LLM parsing | Requires `torch`, optionally a GGUF model |
+| `cv` | CLIP scene classification | Requires OpenAI CLIP + OpenCV |
 
 ---
 
-##  Quick Start
+## 🚀 Quick Start
 
 ```bash
-# Run integrated simulation (no GPU required for demo)
+# Run the integrated 4-agent simulation (auto-saves every output)
 python simulation/run_simulation.py
 
-# Train self-healing RL agent
-python agents/self_healing_agent.py
+# Customize the run
+python simulation/run_simulation.py --duration 120 --failure-time 40 --seed 7
 
-# Run tests
+# Run the test suite
 pytest tests/ -v
 ```
 
+On completion, all artifacts are written to `output/`:
+
+```
+output/
+├── figures/                 # 14+ PNG figures + paper-ready PDF aliases
+├── telemetry/aria_telemetry.csv   # full 50 Hz flight log
+├── logs/aria_simulation.log       # complete run log
+└── summary_report.md              # human-readable mission summary
+```
+
 ---
 
-##  Project Structure
+# 🧠 The Four Core Motives
+
+Each section below shows the figures ARIA produces for that agent. Every image is regenerated on each run.
+
+## 🅰️ Agent A — Self-Healing Control
+
+**Motive:** survive a motor failure. At `t = 45 s` the front-right motor is destroyed. The controller detects the loss, rebuilds its control-allocation mixer using only the three healthy motors, and trades away yaw authority (the one thing a quad cannot recover) to keep roll, pitch, and altitude stable.
+
+**Altitude recovery.** The drone dips briefly when thrust is lost, then climbs back to the target altitude:
+
+![Agent A altitude recovery](output/figures/01_agentA_altitude_recovery.png)
+
+**Attitude stabilization.** Roll and pitch stay bounded through and after the failure; yaw is deliberately allowed to drift because it is under-actuated with three motors:
+
+![Agent A attitude stabilization](output/figures/02_agentA_attitude_stabilization.png)
+
+**Thrust redistribution.** Watch the RPM trace — the failed motor (FR) drops to zero while the remaining three spin up to carry the load:
+
+![Agent A motor RPM redistribution](output/figures/03_agentA_motor_rpm_redistribution.png)
+
+> In production, this re-allocation is learned by a PPO policy (`agents/self_healing_agent.py`). The simulation uses a deterministic fault-tolerant mixer so the demo runs without training.
+
+---
+
+## 🅱️ Agent B — LLM Pilot
+
+**Motive:** fly with plain English. The operator says *"Search the north field for a blue truck and follow it, but stay unnoticed."* Agent B parses intent, stealth constraints, and target into a structured mission.
+
+**Command parsing.** The natural-language command becomes a mode, target, and waypoint grid:
+
+![Agent B mission plan](output/figures/04_agentB_mission_plan.png)
+
+**Processing pipeline.** How a sentence becomes motor commands:
+
+![Agent B LLM pipeline](output/figures/05_agentB_llm_pipeline.png)
+
+**Waypoint navigation.** The drone tracks the sanitized plan and advances through waypoints over time:
+
+![Agent B trajectory tracking](output/figures/06_agentB_trajectory_tracking.png)
+
+> With a GGUF model installed, a real local LLM does the parsing; otherwise a deterministic rule-based fallback keeps the demo working offline.
+
+---
+
+## 🅲 Agent C — Ethical Guardrails
+
+**Motive:** not every geometrically valid path is socially acceptable. Agent C registers sensitive geo-zones (a funeral, a school) and refuses to fly through them — both when planning and while airborne.
+
+**Path sanitization.** Grey waypoints were inside exclusion zones and got pushed around them. The green line is the path actually flown; red ✕ marks live in-flight vetoes:
+
+![Agent C ethical zone map](output/figures/07_agentC_ethical_zone_map.png)
+
+**Zone proximity.** Signed distance to each zone edge over time. Dipping below zero means "inside"; the guardrail veto events keep the drone out:
+
+![Agent C zone proximity](output/figures/08_agentC_zone_proximity.png)
+
+> The engine combines a CLIP scene classifier (when available) with a static geo-zone database, so it degrades gracefully to pure geofencing without vision.
+
+---
+
+## 🅳 Agent D — Digital Twin
+
+**Motive:** never run out of battery mid-mission. Agent D maintains a live twin of the drone, forecasting energy 60 s ahead, estimating wind with a Kalman filter, and recommending speed/altitude changes.
+
+**Battery forecast vs reality.** The solid line is actual state-of-charge; the dashed line is what the twin predicted 60 s earlier:
+
+![Agent D battery SoC](output/figures/09_agentD_battery_soc.png)
+
+**Energy forecast & adaptation.** The twin compares required energy against the usable pack and recommends a cruise speed and altitude when the budget tightens:
+
+![Agent D energy forecast](output/figures/10_agentD_energy_forecast.png)
+
+**Wind estimation.** A Kalman filter recovers the wind vector from the gap between commanded and actual velocity, tracking the (unknown) ground truth:
+
+![Agent D wind estimation](output/figures/11_agentD_wind_estimation.png)
+
+---
+
+## 🗺️ Combined View
+
+The full dashboard, generated at the end of every run:
+
+![ARIA dashboard](output/figures/12_aria_dashboard.png)
+
+And the 3-D flight path (colour = time):
+
+![3D flight path](output/figures/13_flight_path_3d.png)
+
+---
+
+## 📁 Project Structure
 
 ```
 ARIA/
 ├── core/
-│   └── drone_model.py         # Physics model, state, motor dynamics
+│   └── drone_model.py            # 6-DOF quadrotor physics, motor failure, wind-aware drag
 ├── agents/
-│   ├── self_healing_agent.py  # Agent A: RL-based fault recovery
-│   ├── llm_pilot.py           # Agent B: NL command → flight plan
-│   ├── ethical_guardrails.py  # Agent C: CLIP social context filter
-│   └── digital_twin.py        # Agent D: Energy forecasting
+│   ├── self_healing_agent.py     # Agent A: PPO environment + fault-tolerant training
+│   ├── llm_pilot.py              # Agent B: NL -> MissionPlan (LLM or rule fallback)
+│   ├── ethical_guardrails.py     # Agent C: CLIP + geo-zone path sanitization
+│   └── digital_twin.py           # Agent D: energy model, Kalman wind estimator
 ├── simulation/
-│   └── run_simulation.py      # Integrated 4-agent simulation loop
+│   └── run_simulation.py         # Integrated 4-agent loop + auto figure/CSV/log output
 ├── tests/
-│   └── test_all_agents.py     # Pytest unit tests
-├── assets/                    # Generated figures for paper
-├── docs/                      # LaTeX paper files
-├── requirements.txt
-├── setup.py
-└── README.md
+│   └── test_all_agents.py        # 19 unit tests across all four agents
+├── docs/
+│   └── aria_paper.tex            # LaTeX paper skeleton (uses output/figures/*)
+├── output/                       # Auto-generated on every run (figures are committed)
+├── requirements.txt              # Lean core dependencies
+├── requirements-ml.txt           # Optional RL / LLM / vision stack
+├── pyproject.toml                # Packaging + console scripts (aria-sim, aria-train)
+├── CHANGELOG.md                  # Version history
+├── CONTRIBUTING.md               # Contributor guide
+├── CODE_OF_CONDUCT.md            # Community standards
+├── SECURITY.md                   # Vulnerability reporting policy
+└── .github/                      # CI workflow + issue/PR templates
 ```
 
----
+## 🧪 Testing
 
-##  Results Visualization
-
-After running `run_simulation.py`, figures are saved to `assets/`:
-
-- `aria_simulation_results.png` — Combined dashboard
-- `fig_self_healing_altitude.pdf` — Agent A recovery plot
-- `fig_energy_forecast.pdf` — Agent D energy timeline
-- `fig_ethical_guardrails.pdf` — Agent C zone avoidance map
-
-Use these directly in the LaTeX paper.
-
----
-
-##  LLM Model Setup (Agent B)
-
-Agent B requires a local GGUF model. Without it, a rule-based fallback is used automatically.
-
-```python
-from agents.llm_pilot import LLMPilot
-
-# With local model
-pilot = LLMPilot(model_path="models/Mistral-7B-Instruct-v0.2.Q4_K_M.gguf")
-
-# Without model (mock/rule-based)
-pilot = LLMPilot()
-
-plan = pilot.parse_command("Find the blue truck and follow it unnoticed")
+```bash
+pytest tests/ -v
 ```
 
----
+19 unit tests cover physics hover stability, motor-failure injection, NL parsing rules, guardrail blocking/rerouting, path sanitization, energy forecasting, wind estimation, and the battery model. CI runs them on Python 3.10–3.12 plus a headless simulation smoke test.
 
-##  Citation
+## 🐞 Troubleshooting
 
-If you use ARIA in your research:
+| Symptom | Fix |
+|---|---|
+| `ModuleNotFoundError: numpy/...` | `pip install -r requirements.txt` inside an activated venv |
+| `Stale bytecode` errors after edits | Delete `__pycache__` folders (`Get-ChildItem -Recurse -Filter __pycache__ \| Remove-Item -Recurse -Force`) |
+| `torch`/`stable_baselines3` missing | Only needed for RL training: `pip install -r requirements-ml.txt` |
+| LLM parsing falls back to rules | Expected without a GGUF model; pass `LLMPilot(model_path=...)` to enable real LLM parsing |
+| Matplotlib window pops up | Rendering is forced headless (`Agg`); figures always go to `output/figures/` |
+
+## 🗓️ Roadmap
+
+- [ ] Replace the demo fault-tolerant mixer with the trained PPO policy checkpoint
+- [ ] Hardware-in-the-loop with PX4 SITL / PyFlyt physics
+- [ ] Real camera feed into Agent C (CLIP) for live scene classification
+- [ ] Multi-drone coordination and conflict deconfliction
+
+## 📄 Citation
 
 ```bibtex
-@misc{aria2025,
+@software{aria2026,
   title  = {ARIA: Adaptive Resilient Intelligent Autopilot},
-  author = {Your Name},
-  year   = {2025},
-  note   = {GitHub: https://github.com/YOUR_USERNAME/ARIA-drone}
+  author = {Md Jisan Hossen},
+  year   = {2026},
+  url    = {https://github.com/j1s4nn/ARIA-Adaptive-Resilient-Intelligent-Autopilot-For-Drone},
+  license = {MIT}
 }
 ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## 📜 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ for responsible autonomous flight. All figures above are generated automatically by <code>python simulation/run_simulation.py</code>.</sub>
+</p>
